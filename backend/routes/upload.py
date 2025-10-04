@@ -20,7 +20,7 @@ async def upload_file(file: UploadFile = File(...)):
     df = transform_data(df)
 
     # Get preview and replace NaN with None for JSON serialization
-    preview = df.head(5).to_dict(orient="records")
+    preview = df.head(100).to_dict(orient="records")
     for row in preview:
         for key, value in row.items():
             if pd.isna(value):

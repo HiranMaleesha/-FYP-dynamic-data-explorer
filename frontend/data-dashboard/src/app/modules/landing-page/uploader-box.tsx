@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useState, useRef } from 'react';
 import { Button } from '../common/button';
 import apiClient from '../../../lib/api-client';
@@ -13,12 +13,14 @@ export default function UploaderBox() {
     fileInputRef.current?.click();
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) return;
+  const handleUpload = async (fileToUpload?: File) => {
+    const file = fileToUpload || selectedFile;
+    if (!file) return;
+
     setIsUploading(true);
     setError('');
     try {
-      const result = await apiClient.uploadFile(selectedFile);
+      const result = await apiClient.uploadFile(file);
       console.log('Upload successful', result);
       // Optionally, reset selectedFile or show success message
     } catch (err) {
@@ -33,7 +35,14 @@ export default function UploaderBox() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    const allowedTypes = [
+      'text/csv',
+      'text/plain',
+      'application/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/octet-stream',
+    ];
     if (!allowedTypes.includes(file.type)) {
       setError('Please select a CSV or Excel file.');
       setSelectedFile(null);
@@ -42,19 +51,19 @@ export default function UploaderBox() {
 
     setSelectedFile(file);
     setError('');
-    handleUpload();  // Upload automatically after selecting a valid file
+    handleUpload(file); // Pass the file directly
   };
 
   return (
-    <div className="mx-auto mt-8 flex w-full flex-col gap-2 lg:mt-18 lg:w-[800px]">
+    <div className='mx-auto mt-8 flex w-full flex-col gap-2 lg:mt-18 lg:w-[800px]'>
       <div
-        className="hover:bg-bg-blue/50 border-grayscale-800 hover:border-primary-700 relative flex aspect-[1.4] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed md:aspect-[1.8]"
-        data-testid="uploader-box"
+        className='hover:bg-bg-blue/50 border-grayscale-800 hover:border-primary-700 relative flex aspect-[1.4] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed md:aspect-[1.8]'
+        data-testid='uploader-box'
       >
         <Button
-          id="upload-button"
-          data-testid="uploader-button"
-          className="xs:py-8 text-lg font-semibold md:text-xl bg-blue-400 text-white"
+          id='upload-button'
+          data-testid='uploader-button'
+          className='xs:py-8 text-lg font-semibold md:text-xl bg-blue-400 text-white'
           onClick={handleButtonClick}
         >
           Upload CSV or Excel File
@@ -62,17 +71,19 @@ export default function UploaderBox() {
         </Button>
 
         <div
-          className="text-grayscale-700 font-body-regular text-sm md:text-base"
-          data-testid="drag-and-drop-instruction"
+          className='text-grayscale-700 font-body-regular text-sm md:text-base'
+          data-testid='drag-and-drop-instruction'
         >
-          {selectedFile ? `Selected: ${selectedFile.name}` : 'Click to select a file'}
+          {selectedFile
+            ? `Selected: ${selectedFile.name}`
+            : 'Click to select a file'}
         </div>
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+        {error && <div className='text-red-500 text-sm'>{error}</div>}
       </div>
       <input
-        type="file"
+        type='file'
         ref={fileInputRef}
-        accept=".csv,.xlsx,.xls"
+        accept='.csv,.xlsx,.xls'
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
