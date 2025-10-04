@@ -9,11 +9,11 @@ export default function Home() {
         <div className="mx-auto">
           <div className="text-center">
             <h1 className="text-h3 sm:text-h2 md:text-h1 text-secondary-700 mt-36 leading-tight font-semibold tracking-normal break-words hyphens-auto">
-              Title
+              Dynamic Data Explorer
             </h1>
 
             <p className="text-secondary-500 mt-2 md:max-w-3xl md:text-xl">
-              subtittle
+              add your data, and get insights instantly, ask questions, get answers
             </p>
             <UploaderBox />
           </div>

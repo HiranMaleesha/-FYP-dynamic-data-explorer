@@ -1,13 +1,32 @@
-'use-client'
+'use client'
 import { useState, useRef } from 'react';
+import { Button } from '../common/button';
+import apiClient from '../../../lib/api-client';
 
 export default function UploaderBox() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    setIsUploading(true);
+    setError('');
+    try {
+      const result = await apiClient.uploadFile(selectedFile);
+      console.log('Upload successful', result);
+      // Optionally, reset selectedFile or show success message
+    } catch (err) {
+      setError('Upload failed. Please try again.');
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,6 +42,7 @@ export default function UploaderBox() {
 
     setSelectedFile(file);
     setError('');
+    handleUpload();  // Upload automatically after selecting a valid file
   };
 
   return (
@@ -31,15 +51,15 @@ export default function UploaderBox() {
         className="hover:bg-bg-blue/50 border-grayscale-800 hover:border-primary-700 relative flex aspect-[1.4] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed md:aspect-[1.8]"
         data-testid="uploader-box"
       >
-        <button
+        <Button
           id="upload-button"
           data-testid="uploader-button"
-          className="xs:py-8 text-lg font-semibold md:text-xl"
+          className="xs:py-8 text-lg font-semibold md:text-xl bg-blue-400 text-white"
           onClick={handleButtonClick}
         >
           Upload CSV or Excel File
           {/* {isProcessing && <Spinner />} */}
-        </button>
+        </Button>
 
         <div
           className="text-grayscale-700 font-body-regular text-sm md:text-base"
@@ -56,6 +76,15 @@ export default function UploaderBox() {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
+      {/* {selectedFile && (
+        <Button
+          onClick={handleUpload}
+          disabled={isUploading}
+          className="mt-4 bg-green-500 text-white"
+        >
+          {isUploading ? 'Uploading...' : 'Upload File'}
+        </Button>
+      )} */}
       {/* <SampleImages /> */}
     </div>
   );
