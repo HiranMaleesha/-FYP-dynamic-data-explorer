@@ -1,9 +1,11 @@
 'use client';
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '../common/button';
 import apiClient from '../../../lib/api-client';
 
 export default function UploaderBox() {
+  const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
@@ -22,7 +24,14 @@ export default function UploaderBox() {
     try {
       const result = await apiClient.uploadFile(file);
       console.log('Upload successful', result);
-      // Optionally, reset selectedFile or show success message
+
+      // Store the summary data in localStorage for the dashboard
+      if (result.insights && result.insights.summary) {
+        localStorage.setItem('dashboardSummary', JSON.stringify(result.insights.summary));
+      }
+
+      // Navigate to dashboard after successful upload
+      router.push('/dashboard');
     } catch (err) {
       setError('Upload failed. Please try again.');
       console.error(err);
