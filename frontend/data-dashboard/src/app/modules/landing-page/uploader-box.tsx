@@ -26,8 +26,8 @@ export default function UploaderBox() {
       console.log('Upload successful', result);
 
       // Store the summary data in localStorage for the dashboard
-      if (result.insights && result.insights.summary) {
-        localStorage.setItem('dashboardSummary', JSON.stringify(result.insights.summary));
+      if (result.insights) {
+        localStorage.setItem('insightsData', JSON.stringify(result.insights));
       }
 
       // Navigate to dashboard after successful upload
