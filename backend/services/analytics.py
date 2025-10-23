@@ -10,17 +10,17 @@ def compute_insights(df: pd.DataFrame) -> Dict[str, Any]:
         insights['manufacturer_sales'] = manufacturer_counts.to_dict('records')
 
     # 2. Highest average profit by manufacturer (Bar chart: x=Manufacturer, y=Avg_Profit)
-    if 'Manufacturer' in df.columns and 'Profit_LKR' in df.columns:
+    if 'Manufacturer' in df.columns and 'Price_LKR' in df.columns and 'Cost_of_Dealership' in df.columns and 'Cost_Price_LKR' in df.columns:
+        # Calculate profit for each vehicle
+        df['Profit_LKR'] = df['Price_LKR'] - (df['Cost_of_Dealership'] + df['Cost_Price_LKR'])
         avg_profit = df.groupby('Manufacturer')['Profit_LKR'].mean().reset_index(name='Avg_Profit')
+        avg_profit['Avg_Profit'] = avg_profit['Avg_Profit'].astype(int)
         insights['manufacturer_profit'] = avg_profit.to_dict('records')
 
     # 3. Fuel type trends (Pie chart: Fuel type vs Count or Sum Profit)
     if 'Fuel type' in df.columns:
         fuel_counts = df.groupby('Fuel type').size().reset_index(name='Count')
         insights['fuel_sales'] = fuel_counts.to_dict('records')
-        if 'Profit_LKR' in df.columns:
-            fuel_profit = df.groupby('Fuel type')['Profit_LKR'].sum().reset_index(name='Total_Profit')
-            insights['fuel_profit'] = fuel_profit.to_dict('records')
 
     # 4. Average selling price over manufacture years (Line chart: x=Year, y=Avg_Price)
     if 'Year of manufacture' in df.columns and 'Price_LKR' in df.columns:
