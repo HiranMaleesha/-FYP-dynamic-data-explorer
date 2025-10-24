@@ -20,7 +20,6 @@ export default function ChatComponent({ filename }: ChatComponentProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -77,35 +76,13 @@ export default function ChatComponent({ filename }: ChatComponentProps) {
     }
   };
 
-  if (!isOpen) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="rounded-full w-12 h-12 bg-blue-600 hover:bg-blue-700 shadow-lg"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-96 h-[500px] flex flex-col">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <h3 className="font-semibold text-gray-900 dark:text-white">
             Chat with Your Data
           </h3>
-          <Button
-            onClick={() => setIsOpen(false)}
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-          >
-            <X className="w-4 h-4" />
-          </Button>
         </div>
 
         {/* Messages */}
@@ -176,7 +153,6 @@ export default function ChatComponent({ filename }: ChatComponentProps) {
             </Button>
           </div>
         </div>
-      </div>
     </div>
   );
 }
