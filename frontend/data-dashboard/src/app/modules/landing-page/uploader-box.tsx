@@ -30,6 +30,11 @@ export default function UploaderBox() {
         localStorage.setItem('insightsData', JSON.stringify(result.insights));
       }
 
+      // Store S3 filename for chat functionality
+      if (result.filename) {
+        localStorage.setItem('s3Filename', result.filename);
+      }
+
       // Navigate to dashboard after successful upload
       router.push('/dashboard');
     } catch (err) {

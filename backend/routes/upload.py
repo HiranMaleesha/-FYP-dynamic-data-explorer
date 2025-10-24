@@ -40,6 +40,15 @@ def upload_to_s3(file_content, filename, bucket_name):
         print(f"S3 upload error: {e}")
         return None
 
+def download_from_s3(filename, bucket_name):
+    try:
+        print(f"Downloading {filename} from S3 bucket {bucket_name}")
+        obj = s3_client.get_object(Bucket=bucket_name, Key=filename)
+        return obj['Body'].read()
+    except Exception as e:
+        print(f"S3 download error: {e}")
+        return None
+
 router = APIRouter()
 
 @router.post("/upload")

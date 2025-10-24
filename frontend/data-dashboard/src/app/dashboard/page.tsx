@@ -15,6 +15,7 @@ import {
   Legend,
 } from 'chart.js';
 import SummaryCard from '@/app/modules/common/summary-card';
+import ChatComponent from '@/app/modules/common/chat-component';
 import { Car, DollarSign, TrendingUp, Clock, Award } from 'lucide-react';
 
 ChartJS.register(
@@ -49,10 +50,12 @@ interface InsightsData {
 export default function Home() {
   const [insights, setInsights] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [s3Filename, setS3Filename] = useState<string>('');
 
   useEffect(() => {
     // Try to get insights data from localStorage (contains summary and other data)
     const storedInsights = localStorage.getItem('insightsData');
+    const storedFilename = localStorage.getItem('s3Filename');
 
     if (storedInsights) {
       try {
@@ -61,6 +64,10 @@ export default function Home() {
       } catch (error) {
         console.error('Failed to parse stored insights:', error);
       }
+    }
+
+    if (storedFilename) {
+      setS3Filename(storedFilename);
     }
 
     setLoading(false);
@@ -482,6 +489,9 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Chat Component */}
+      {s3Filename && <ChatComponent filename={s3Filename} />}
 
     </div>
   );
