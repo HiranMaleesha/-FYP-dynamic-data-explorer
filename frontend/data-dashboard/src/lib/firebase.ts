@@ -2,12 +2,12 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.FIREBASE_API_KEY,
-  authDomain: import.meta.env.FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.FIREBASE_APP_ID,
+  apiKey: "AIzaSyDLR4TZZoYmTP6L_ljsS4LNx-srd3a0ATA",
+  authDomain: "data-explore-fyp.firebaseapp.com",
+  projectId: "data-explore-fyp",
+  storageBucket: "data-explore-fyp.firebasestorage.app",
+  messagingSenderId: "611693961835",
+  appId: "1:611693961835:web:ae957f883b9ccc0aadc72e"
 };
 
 const app = initializeApp(firebaseConfig);
