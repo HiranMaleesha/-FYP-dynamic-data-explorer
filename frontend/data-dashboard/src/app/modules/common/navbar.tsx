@@ -22,6 +22,9 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
+    const confirmed = window.confirm('Are you sure you want to logout? This will delete all your uploaded files.');
+    if (!confirmed) return;
+
     try {
       // Call backend to delete files before logging out
       const idToken = await user?.getIdToken();

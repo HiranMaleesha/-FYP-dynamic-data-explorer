@@ -10,9 +10,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-100 text-gray-800 flex flex-col">
-      {/* Header */}
-      
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-100 text-gray-800 flex flex-col">      
 
       {/* Hero Section */}
       <main className="flex-grow flex flex-col justify-center items-center text-center px-6 py-16">
