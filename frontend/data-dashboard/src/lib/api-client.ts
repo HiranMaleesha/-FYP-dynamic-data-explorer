@@ -4,8 +4,20 @@ const apiClient = {
         const formData = new FormData();
         formData.append('file', file);
 
+        // Get Firebase ID token for authentication
+        const { getAuth } = await import('firebase/auth');
+        const { auth } = await import('./firebase');
+        const user = getAuth().currentUser;
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+        const idToken = await user.getIdToken();
+
         const response = await fetch('http://localhost:8000/api/upload', {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${idToken}`,
+            },
             body: formData,
         });
 

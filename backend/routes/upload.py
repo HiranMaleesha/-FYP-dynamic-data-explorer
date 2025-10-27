@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Request, HTTPException
 from fastapi.responses import FileResponse
 import pandas as pd
 import json
@@ -20,6 +20,35 @@ s3_client = boto3.client(
     aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
     region_name=os.getenv('AWS_REGION')
 )
+
+# Helper functions for user file tracking
+def load_user_files():
+    try:
+        with open('user_files.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+def save_user_files(data):
+    with open('user_files.json', 'w') as f:
+        json.dump(data, f)
+
+def get_user_files(user_id):
+    data = load_user_files()
+    return data.get(user_id, [])
+
+def add_user_file(user_id, filename):
+    data = load_user_files()
+    if user_id not in data:
+        data[user_id] = []
+    data[user_id].append(filename)
+    save_user_files(data)
+
+def clear_user_files(user_id):
+    data = load_user_files()
+    if user_id in data:
+        del data[user_id]
+        save_user_files(data)
 
 def upload_to_s3(file_content, filename, bucket_name):
     try:
@@ -52,7 +81,14 @@ def download_from_s3(filename, bucket_name):
 router = APIRouter()
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...), request: Request = None):
+    # Get user ID from middleware - allow unauthenticated uploads for now
+    user_id = getattr(request.state, 'user_id', None)
+    print(f"User ID from request: {user_id}")
+    # Temporarily allow uploads without authentication for testing
+    # if not user_id:
+    #     raise HTTPException(status_code=401, detail="User not authenticated")
+
     contents = await file.read()
 
     # Upload to S3
@@ -64,7 +100,11 @@ async def upload_file(file: UploadFile = File(...)):
 
     if not s3_url:
         print("S3 upload failed")
-        return {"error": "Failed to upload file to S3"}
+        raise HTTPException(status_code=500, detail="Failed to upload file to S3")
+
+    # Track file for user (only if authenticated)
+    if user_id:
+        add_user_file(user_id, unique_filename)
 
     # Detect CSV vs Excel and process data
     if file.filename.endswith(".csv"):
@@ -91,4 +131,29 @@ async def upload_file(file: UploadFile = File(...)):
         "s3_url": s3_url,
         "filename": unique_filename
     }
+
+@router.post("/delete-user-files")
+async def delete_user_files(request: Request = None):
+    # Get user ID from middleware
+    user_id = getattr(request.state, 'user_id', None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+
+    bucket_name = os.getenv('S3_BUCKET_NAME')
+    user_files = get_user_files(user_id)
+
+    deleted_files = []
+    for filename in user_files:
+        try:
+            s3_client.delete_object(Bucket=bucket_name, Key=filename)
+            deleted_files.append(filename)
+            print(f"Deleted {filename} from S3")
+        except Exception as e:
+            print(f"Failed to delete {filename}: {e}")
+
+    # Clear user's file records
+    clear_user_files(user_id)
+
+    return {"message": f"Deleted {len(deleted_files)} files", "deleted_files": deleted_files}
+
 

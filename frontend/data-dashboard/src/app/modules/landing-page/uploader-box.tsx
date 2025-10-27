@@ -47,6 +47,7 @@ export default function UploaderBox() {
       { message: 'Processing data', progress: 70 },
       { message: 'Data transformation completed', progress: 80 },
       { message: 'Computing insights', progress: 90 },
+      { message: 'Upload completed successfully', progress: 100 },
     ];
 
     for (const step of steps) {

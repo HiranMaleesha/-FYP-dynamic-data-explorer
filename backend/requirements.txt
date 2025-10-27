@@ -1,6 +1,8 @@
 fastapi
-uvicorn 
+uvicorn
 python-multipart
 boto3
-python-dotenv 
-openpyxl 
+python-dotenv
+openpyxl
+firebase-admin
+pandas

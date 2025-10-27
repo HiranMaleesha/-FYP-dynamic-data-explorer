@@ -81,9 +81,9 @@ export default function Home() {
   };
 
   return (
-    <div className='p-6 h-screen grid grid-cols-1 lg:grid-cols-4 gap-6'>
+    <div className='p-6 min-h-screen flex gap-6'>
       {/* Left Column: Analytics */}
-      <div className='lg:col-span-3 overflow-y-auto space-y-6'>
+      <div className='flex-1 overflow-y-auto space-y-6 max-h-screen pr-6'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Dashboard
         </h1>
@@ -216,64 +216,73 @@ export default function Home() {
                 Manufacturer Sales
               </h3>
               {insights?.manufacturer_sales ? (
-                <div className='h-64'>
-                  <Doughnut
-                    data={{
-                      labels: insights.manufacturer_sales.map(item => item.Manufacturer),
-                      datasets: [
-                        {
-                          label: 'Sales Count',
-                          data: insights.manufacturer_sales.map(item => item.Count),
-                          backgroundColor: [
-                            'rgba(168, 85, 247, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(245, 158, 11, 0.8)',
-                            'rgba(239, 68, 68, 0.8)',
-                            'rgba(6, 182, 212, 0.8)',
-                            'rgba(236, 72, 153, 0.8)',
-                            'rgba(34, 197, 94, 0.8)',
-                          ],
-                          borderColor: [
-                            'rgba(168, 85, 247, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(16, 185, 129, 1)',
-                            'rgba(245, 158, 11, 1)',
-                            'rgba(239, 68, 68, 1)',
-                            'rgba(6, 182, 212, 1)',
-                            'rgba(236, 72, 153, 1)',
-                            'rgba(34, 197, 94, 1)',
-                          ],
-                          borderWidth: 2,
-                          hoverBorderWidth: 4,
-                        },
-                      ],
-                    }}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          display: false,
-                        },
-                        tooltip: {
-                          callbacks: {
-                            label: function(context) {
-                              const label = context.label || '';
-                              const value = context.parsed;
-                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                              const percentage = ((value / total) * 100).toFixed(1);
-                              return `${label}: ${value} (${percentage}%)`;
+                <div className='h-80 flex justify-center'>
+                  <div className='w-full max-w-md'>
+                    <Doughnut
+                      data={{
+                        labels: insights.manufacturer_sales.map(item => item.Manufacturer),
+                        datasets: [
+                          {
+                            label: 'Sales Count',
+                            data: insights.manufacturer_sales.map(item => item.Count),
+                            backgroundColor: [
+                              'rgba(168, 85, 247, 0.8)',
+                              'rgba(59, 130, 246, 0.8)',
+                              'rgba(16, 185, 129, 0.8)',
+                              'rgba(245, 158, 11, 0.8)',
+                              'rgba(239, 68, 68, 0.8)',
+                              'rgba(6, 182, 212, 0.8)',
+                              'rgba(236, 72, 153, 0.8)',
+                              'rgba(34, 197, 94, 0.8)',
+                            ],
+                            borderColor: [
+                              'rgba(168, 85, 247, 1)',
+                              'rgba(59, 130, 246, 1)',
+                              'rgba(16, 185, 129, 1)',
+                              'rgba(245, 158, 11, 1)',
+                              'rgba(239, 68, 68, 1)',
+                              'rgba(6, 182, 212, 1)',
+                              'rgba(236, 72, 153, 1)',
+                              'rgba(34, 197, 94, 1)',
+                            ],
+                            borderWidth: 3,
+                            hoverBorderWidth: 5,
+                          },
+                        ],
+                      }}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            position: 'bottom' as const,
+                            labels: {
+                              padding: 15,
+                              usePointStyle: true,
+                              font: {
+                                size: 12,
+                              }
+                            }
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                              }
                             }
                           }
-                        }
-                      },
-                      cutout: '60%',
-                    }}
-                  />
+                        },
+                        cutout: '50%',
+                      }}
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className='h-64 flex items-center justify-center text-gray-500'>
+                <div className='h-80 flex items-center justify-center text-gray-500'>
                   No manufacturer sales data available.
                 </div>
               )}
@@ -524,8 +533,10 @@ export default function Home() {
       </div>
 
       {/* Right Column: Chat Sidebar */}
-      <div className='lg:col-span-1'>
-        {s3Filename && <ChatComponent filename={s3Filename} />}
+      <div className='w-80 flex-shrink-0'>
+        <div className='fixed right-6 top-24 bottom-6 w-80'>
+          {s3Filename && <ChatComponent filename={s3Filename} />}
+        </div>
       </div>
     </div>
   );
