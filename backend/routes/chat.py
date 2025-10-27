@@ -82,21 +82,34 @@ Dataset Summary:
 - Fuel Types: {', '.join(df.get('Fuel type', pd.Series()).value_counts().head(3).index.tolist())}
 """
 
-        data_context = f"""
-Vehicle Sales Data Analysis:
+        # Determine if question is dataset-related or general
+        dataset_keywords = ['manufacturer', 'price', 'fuel', 'vehicle', 'sales', 'trend', 'average', 'total', 'top', 'most', 'distribution', 'profit', 'year', 'month']
+        is_dataset_related = any(keyword in question for keyword in dataset_keywords)
+
+        if is_dataset_related:
+            data_context = f"""
+Based on the provided dataset:
 
 {stats_text}
 
 Question: {request.question}
 
-Provide a direct, data-driven answer based on the statistics above and the if the question is not related to the dataset you can answer from sri lankan vehicle market and general data. For predictions, use the trends shown.
+Provide a direct, data-driven answer based on the statistics above. For predictions, use the trends shown in the data.
 """
+            system_prompt = "You are a vehicle sales analyst. Always start your response with 'Based on the provided dataset' when answering dataset-related questions. Use the provided data statistics to give direct, actionable answers. Base predictions on the data trends shown."
+        else:
+            data_context = f"""
+General Question: {request.question}
+
+Answer this question about the Sri Lankan vehicle market or general automotive knowledge. Use current market trends and general knowledge.
+"""
+            system_prompt = "You are a knowledgeable assistant about the Sri Lankan vehicle market and general automotive topics. Answer questions directly and informatively without mentioning any specific dataset unless relevant."
 
         chat_completion = client.chat.completions.create(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a vehicle sales analyst. Use the provided data statistics to give direct, actionable answers. Base predictions on the data trends shown."
+                    "content": system_prompt
                 },
                 {
                     "role": "user",

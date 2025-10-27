@@ -13,7 +13,7 @@ interface Message {
 }
 
 interface ChatComponentProps {
-  filename: string; // S3 filename from upload
+  filename: string; 
 }
 
 export default function ChatComponent({ filename }: ChatComponentProps) {
