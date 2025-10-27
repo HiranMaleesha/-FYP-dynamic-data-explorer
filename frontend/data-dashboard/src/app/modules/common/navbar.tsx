@@ -22,7 +22,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    const confirmed = window.confirm('Are you sure you want to logout? This will delete all your uploaded files.');
+    const confirmed = window.confirm('Are you sure you want to logout? This will delete all your uploaded files and clear all cached data.');
     if (!confirmed) return;
 
     try {
@@ -37,6 +37,23 @@ export default function Navbar() {
           },
         });
       }
+
+      // Clear all localStorage and sessionStorage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // Clear any cached data
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          await Promise.all(
+            cacheNames.map(cacheName => caches.delete(cacheName))
+          );
+        } catch (error) {
+          console.error('Error clearing caches:', error);
+        }
+      }
+
       await signOut(auth);
       router.push('/');
     } catch (error: any) {
@@ -100,23 +117,7 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button
-                  onClick={() => router.push('/')}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-1"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span className="hidden sm:inline">Login</span>
-                </Button>
-                <Button
-                  onClick={() => router.push('/')}
-                  size="sm"
-                  className="flex items-center space-x-1"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Sign Up</span>
-                </Button>
+                
               </div>
             )}
           </div>
