@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 import SummaryCard from '@/app/modules/common/summary-card';
 import ChatComponent from '@/app/modules/common/chat-component';
+import TutorialTour from '@/app/modules/common/tutorial-tour';
 import { Car, DollarSign, TrendingUp, Clock, Award, Maximize2, X } from 'lucide-react';
 
 ChartJS.register(
@@ -305,9 +306,10 @@ export default function Home() {
   };
 
   return (
-    <div className='p-6 min-h-screen flex gap-6'>
-      {/* Left Column: Analytics */}
-      <div className='flex-1 overflow-y-auto space-y-6 max-h-screen pr-6'>
+    <TutorialTour page="dashboard">
+      <div className='p-6 min-h-screen flex gap-6' data-tutorial="dashboard">
+        {/* Left Column: Analytics */}
+        <div className='flex-1 overflow-y-auto space-y-6 max-h-screen pr-6'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Dashboard
         </h1>
@@ -317,7 +319,7 @@ export default function Home() {
           <h2 className='text-2xl font-semibold text-gray-900 dark:text-white'>
             Summary Data
           </h2>
-          <div className='bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg'>
+          <div className='bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg' data-tutorial="summary-cards">
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'>
         {loading ? (
           <div className='col-span-full text-center py-8'>
@@ -365,7 +367,7 @@ export default function Home() {
           <h2 className='text-2xl font-semibold text-gray-900 dark:text-white'>
             Analytics Overview
           </h2>
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6' data-tutorial="charts">
             {/* Time-Based Trends */}
             <div className='bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 relative group'>
               <div className='flex items-center justify-between mb-4'>
@@ -801,15 +803,16 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Right Column: Chat Sidebar */}
-      <div className='w-80 flex-shrink-0'>
-        <div className='fixed right-6 top-24 bottom-6 w-80'>
-          {s3Filename && <ChatComponent filename={s3Filename} />}
+        {/* Right Column: Chat Sidebar */}
+        <div className='w-80 flex-shrink-0' data-tutorial="chat">
+          <div className='fixed right-6 top-24 bottom-6 w-80'>
+            {s3Filename && <ChatComponent filename={s3Filename} />}
+          </div>
         </div>
-      </div>
 
-      {/* Expanded Chart Modal */}
-      {renderExpandedChart()}
-    </div>
+        {/* Expanded Chart Modal */}
+        {renderExpandedChart()}
+      </div>
+    </TutorialTour>
   );
 }

@@ -122,7 +122,7 @@ export default function UploaderBox() {
   };
 
   return (
-    <div className='mx-auto mt-8 flex w-full flex-col gap-2 lg:mt-18 lg:w-[800px]'>
+    <div className='mx-auto mt-8 flex w-full flex-col gap-2 lg:mt-18 lg:w-[800px]' data-tutorial="upload">
       <div
         className={`hover:bg-blue-50 border-gray-300 hover:border-blue-500 relative flex aspect-[1.4] cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-8 transition-colors md:aspect-[1.8] ${
           isDragOver ? 'bg-blue-50 border-blue-500' : ''
