@@ -38,7 +38,7 @@ export default function UploaderBox() {
     }
   };
 
-  const simulateProgress = async () => {
+  const simulateProgress = async (uploadPromise: Promise<any>) => {
     const steps = [
       { message: 'Starting file upload', progress: 10 },
       { message: 'File read successfully', progress: 20 },
@@ -47,13 +47,32 @@ export default function UploaderBox() {
       { message: 'Processing data', progress: 70 },
       { message: 'Data transformation completed', progress: 80 },
       { message: 'Computing insights', progress: 90 },
-      { message: 'Upload completed successfully', progress: 100 },
     ];
 
-    for (const step of steps) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay between steps
-      setProgress(step.progress);
-      setMessage(step.message);
+    // Start with initial progress
+    setProgress(10);
+    setMessage('Starting file upload');
+
+    try {
+      // Wait for the actual upload to complete
+      const result = await uploadPromise;
+
+      // Complete the remaining progress steps quickly
+      for (let i = 1; i < steps.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 200)); // Faster completion
+        setProgress(steps[i].progress);
+        setMessage(steps[i].message);
+      }
+
+      // Final completion
+      await new Promise(resolve => setTimeout(resolve, 200));
+      setProgress(100);
+      setMessage('Upload completed successfully');
+
+      return result;
+    } catch (error) {
+      // If upload fails, don't complete progress
+      throw error;
     }
   };
 
@@ -67,14 +86,11 @@ export default function UploaderBox() {
     setMessage('');
 
     try {
-      // Start progress simulation
-      const progressPromise = simulateProgress();
-
       // Make the actual upload request
-      const result = await apiClient.uploadFile(file);
+      const uploadPromise = apiClient.uploadFile(file);
 
-      // Wait for progress to complete
-      await progressPromise;
+      // Start progress simulation that waits for upload to complete
+      const result = await simulateProgress(uploadPromise);
 
       console.log('Upload successful', result);
 
@@ -148,7 +164,7 @@ export default function UploaderBox() {
             <Button
               variant="cta"
               id='upload-button'
-              className='w-48 h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300'
+              className='w-48 h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300'
               data-testid='uploader-button'
               onClick={(e) => {
                 e.stopPropagation();
@@ -188,16 +204,6 @@ export default function UploaderBox() {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
-      {/* {selectedFile && (
-        <Button
-          onClick={handleUpload}
-          disabled={isUploading}
-          className="mt-4 bg-green-500 text-white"
-        >
-          {isUploading ? 'Uploading...' : 'Upload File'}
-        </Button>
-      )} */}
-      {/* <SampleImages /> */}
     </div>
   );
 }

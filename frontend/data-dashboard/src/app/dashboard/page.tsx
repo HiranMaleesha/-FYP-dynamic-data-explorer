@@ -46,6 +46,10 @@ interface InsightsData {
   manufacturer_profit?: { Manufacturer: string; Avg_Profit: number }[];
   price_trend?: { "Year of manufacture": number; Avg_Price: number }[];
   fuel_sales?: { "Fuel type": string; Count: number }[];
+  manufacturer_over_time?: { Month: string; Manufacturer: string; Count: number }[];
+  monthly_sales?: { Month: string; Count: number }[];
+  owner_price_stats?: { Number_of_Owners: number; count: number; mean: number; std: number; min: number; "25%": number; "50%": number; "75%": number; max: number }[];
+  model_popularity?: { Model: string; Count: number }[];
 }
 
 export default function Home() {
@@ -536,6 +540,7 @@ export default function Home() {
 
         {/* Additional Charts Grid */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+
           {/* Price Trends */}
           <div className='bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 relative group'>
             <div className='flex items-center justify-between mb-4'>
@@ -798,6 +803,178 @@ export default function Home() {
           ) : (
             <div className='h-80 flex items-center justify-center text-gray-500'>
               No fuel sales data available.
+            </div>
+          )}
+        </div>
+
+        {/* New Charts Grid */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          {/* Monthly Sales Volume */}
+          <div className='bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300'>
+            <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+              Monthly Sales Volume
+            </h3>
+            {insights?.monthly_sales ? (
+              <div className='h-64'>
+                <Line
+                  data={{
+                    labels: insights.monthly_sales.map((item) => item.Month),
+                    datasets: [{
+                      label: 'Vehicles Sold',
+                      data: insights.monthly_sales.map((item) => item.Count),
+                      borderColor: 'rgba(16, 185, 129, 1)',
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                      borderWidth: 3,
+                      pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                      pointBorderColor: '#ffffff',
+                      pointBorderWidth: 2,
+                      pointRadius: 6,
+                      pointHoverRadius: 8,
+                      tension: 0.4,
+                      fill: true,
+                    }],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                      x: { grid: { display: false }, ticks: { color: 'rgba(107, 114, 128, 1)' } },
+                      y: { grid: { color: 'rgba(243, 244, 246, 1)' }, ticks: { color: 'rgba(107, 114, 128, 1)' }, beginAtZero: true },
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                  }}
+                />
+              </div>
+            ) : (
+              <div className='h-64 flex items-center justify-center text-gray-500'>
+                No monthly sales data available.
+              </div>
+            )}
+          </div>
+
+          {/* Owner Count vs Price Distribution */}
+          <div className='bg-gradient-to-br from-violet-50 to-purple-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300'>
+            <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+              Price Distribution by Owner Count
+            </h3>
+            {insights?.owner_price_stats ? (
+              <div className='h-64'>
+                <Bar
+                  data={{
+                    labels: insights.owner_price_stats.map(item => `Owners: ${item.Number_of_Owners}`),
+                    datasets: [{
+                      label: 'Average Price (LKR)',
+                      data: insights.owner_price_stats.map(item => item.mean),
+                      backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                      borderColor: 'rgba(139, 92, 246, 1)',
+                      borderWidth: 2,
+                      borderRadius: 6,
+                    }],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const stats = insights?.owner_price_stats?.[context.dataIndex];
+                            if (stats) {
+                              return [
+                                `Average: ${formatCurrency(stats.mean)}`,
+                                `Min: ${formatCurrency(stats.min)}`,
+                                `Max: ${formatCurrency(stats.max)}`,
+                                `Count: ${stats.count}`,
+                              ];
+                            }
+                            return context.label || '';
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: { grid: { display: false }, ticks: { color: 'rgba(107, 114, 128, 1)' } },
+                      y: { grid: { color: 'rgba(243, 244, 246, 1)' }, ticks: { color: 'rgba(107, 114, 128, 1)', callback: (value) => formatCurrency(Number(value)) }, beginAtZero: true },
+                    },
+                  }}
+                />
+              </div>
+            ) : (
+              <div className='h-64 flex items-center justify-center text-gray-500'>
+                No owner price data available.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Model Popularity */}
+        <div className='bg-gradient-to-br from-rose-50 to-pink-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300'>
+          <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+            Model Popularity
+          </h3>
+          {insights?.model_popularity ? (
+            <div className='h-80 flex justify-center'>
+              <div className='w-full max-w-2xl'>
+                <Bar
+                  data={{
+                    labels: insights.model_popularity.map(item => item.Model),
+                    datasets: [{
+                      label: 'Sales Count',
+                      data: insights.model_popularity.map(item => item.Count),
+                      backgroundColor: insights.model_popularity.map((_, index) =>
+                        [
+                          'rgba(244, 63, 94, 0.8)', 'rgba(251, 146, 60, 0.8)', 'rgba(34, 197, 94, 0.8)',
+                          'rgba(59, 130, 246, 0.8)', 'rgba(168, 85, 247, 0.8)', 'rgba(6, 182, 212, 0.8)',
+                          'rgba(236, 72, 153, 0.8)', 'rgba(239, 68, 68, 0.8)'
+                        ][index % 8]
+                      ),
+                      borderColor: insights.model_popularity.map((_, index) =>
+                        [
+                          'rgba(244, 63, 94, 1)', 'rgba(251, 146, 60, 1)', 'rgba(34, 197, 94, 1)',
+                          'rgba(59, 130, 246, 1)', 'rgba(168, 85, 247, 1)', 'rgba(6, 182, 212, 1)',
+                          'rgba(236, 72, 153, 1)', 'rgba(239, 68, 68, 1)'
+                        ][index % 8]
+                      ),
+                      borderWidth: 2,
+                      borderRadius: 6,
+                      borderSkipped: false,
+                    }],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y;
+                            return value !== null ? `${label}: ${value}` : label;
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { display: false },
+                        ticks: { color: 'rgba(107, 114, 128, 1)', maxRotation: 45, minRotation: 45 }
+                      },
+                      y: {
+                        grid: { color: 'rgba(243, 244, 246, 1)' },
+                        ticks: { color: 'rgba(107, 114, 128, 1)' },
+                        beginAtZero: true
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className='h-80 flex items-center justify-center text-gray-500'>
+              No model popularity data available.
             </div>
           )}
         </div>

@@ -64,6 +64,23 @@ def compute_insights(df: pd.DataFrame) -> Dict[str, Any]:
         engine_price = df[['Engine size', 'Price_LKR']].dropna()
         insights['engine_price'] = engine_price.to_dict('records')
 
+    # 11. Monthly sales volume (Line chart: x=Month, y=Count)
+    if 'Sold_Date' in df.columns:
+        df['Sold_Date'] = pd.to_datetime(df['Sold_Date'], errors='coerce')
+        monthly_sales = df.groupby(df['Sold_Date'].dt.to_period('M')).size().reset_index(name='Count')
+        monthly_sales['Month'] = monthly_sales['Sold_Date'].astype(str)
+        insights['monthly_sales'] = monthly_sales[['Month', 'Count']].to_dict('records')
+
+    # 12. Owner count vs price distribution (Box plot data: Number_of_Owners vs Price_LKR)
+    if 'Number_of_Owners' in df.columns and 'Price_LKR' in df.columns:
+        owner_price_stats = df.groupby('Number_of_Owners')['Price_LKR'].describe().reset_index()
+        insights['owner_price_stats'] = owner_price_stats.to_dict('records')
+
+    # 13. Model popularity (Bar chart: Model vs Count)
+    if 'Model' in df.columns:
+        model_counts = df.groupby('Model').size().reset_index(name='Count')
+        insights['model_popularity'] = model_counts.to_dict('records')
+
     # Summary statistics
     summary = {}
     summary['total_vehicles'] = len(df)
