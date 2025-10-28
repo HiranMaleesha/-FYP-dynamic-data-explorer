@@ -49,7 +49,14 @@ async def chat_with_csv(request: ChatRequest):
         question = request.question.lower()
 
         # Handle common queries with direct pandas analysis (accurate and fast)
-        if "top manufacturer" in question or "most sold manufacturer" in question or "top manufacturers" in question:
+        if "least sold manufacturer" in question or "lowest selling manufacturer" in question or "worst performing manufacturer" in question:
+            if 'Manufacturer' in df.columns:
+                manufacturer_counts = df['Manufacturer'].value_counts()
+                least_sold = manufacturer_counts.tail(5)  # Bottom 5
+                response = "Manufacturers with lowest sales:\n" + "\n".join([f"{i+1}. {manufacturer}: {count:,} vehicles" for i, (manufacturer, count) in enumerate(least_sold.items())])
+                return ChatResponse(answer=response)
+
+        elif "top manufacturer" in question or "most sold manufacturer" in question or "top manufacturers" in question:
             if 'Manufacturer' in df.columns:
                 manufacturer_counts = df['Manufacturer'].value_counts()
                 top_5 = manufacturer_counts.head(5)
@@ -71,8 +78,39 @@ async def chat_with_csv(request: ChatRequest):
             total = len(df)
             return ChatResponse(answer=f"There are {total:,} vehicles in the dataset.")
 
-        # For complex queries, use AI with optimized context (much smaller)
-        # Create compact summary instead of full data
+        elif "most expensive" in question or "highest price" in question:
+            if 'Price_LKR' in df.columns and 'Manufacturer' in df.columns and 'Model' in df.columns:
+                max_price_row = df.loc[df['Price_LKR'].idxmax()]
+                response = f"The most expensive vehicle is:\n- {max_price_row['Manufacturer']} {max_price_row['Model']}\n- Price: LKR {max_price_row['Price_LKR']:,.0f}"
+                return ChatResponse(answer=response)
+
+        elif "cheapest" in question or "lowest price" in question:
+            if 'Price_LKR' in df.columns and 'Manufacturer' in df.columns and 'Model' in df.columns:
+                min_price_row = df.loc[df['Price_LKR'].idxmin()]
+                response = f"The cheapest vehicle is:\n- {min_price_row['Manufacturer']} {min_price_row['Model']}\n- Price: LKR {min_price_row['Price_LKR']:,.0f}"
+                return ChatResponse(answer=response)
+
+        elif "average mileage" in question or "avg mileage" in question:
+            if 'Mileage' in df.columns:
+                avg_mileage = df['Mileage'].mean()
+                return ChatResponse(answer=f"The average mileage is {avg_mileage:,.0f} km.")
+
+        elif "most popular model" in question or "top model" in question:
+            if 'Model' in df.columns:
+                model_counts = df['Model'].value_counts()
+                top_model = model_counts.head(1)
+                response = f"The most popular model is {top_model.index[0]} with {top_model.iloc[0]:,} vehicles sold."
+                return ChatResponse(answer=response)
+
+        elif "year of manufacture" in question or "manufacture year" in question:
+            if 'Year of manufacture' in df.columns:
+                year_counts = df['Year of manufacture'].value_counts().sort_index()
+                most_common_year = year_counts.idxmax()
+                response = f"The most common year of manufacture is {most_common_year} with {year_counts[most_common_year]:,} vehicles."
+                return ChatResponse(answer=response)
+
+        # For complex queries, use AI with full dataset context
+        # Create comprehensive summary with detailed statistics
         stats_text = f"""
 Dataset Summary:
 - Total Records: {len(df):,}
@@ -80,30 +118,38 @@ Dataset Summary:
 - Price Range: LKR {df.get('Price_LKR', pd.Series()).min():,.0f} - LKR {df.get('Price_LKR', pd.Series()).max():,.0f}
 - Top Manufacturer: {df.get('Manufacturer', pd.Series()).mode().iloc[0] if len(df.get('Manufacturer', pd.Series())) > 0 else 'N/A'}
 - Fuel Types: {', '.join(df.get('Fuel type', pd.Series()).value_counts().head(3).index.tolist())}
+
+Detailed Statistics:
+- Manufacturers: {', '.join(df.get('Manufacturer', pd.Series()).value_counts().head(5).index.tolist())}
+- Models: {', '.join(df.get('Model', pd.Series()).value_counts().head(5).index.tolist())}
+- Average Mileage: {df.get('Mileage', pd.Series()).mean():,.0f} km
+- Average Holding Days: {df.get('Holding_Days', pd.Series([30])).mean():.0f} days
+- Most Common Year: {df.get('Year of manufacture', pd.Series()).mode().iloc[0] if len(df.get('Year of manufacture', pd.Series())) > 0 else 'N/A'}
 """
 
         # Determine if question is dataset-related or general
-        dataset_keywords = ['manufacturer', 'price', 'fuel', 'vehicle', 'sales', 'trend', 'average', 'total', 'top', 'most', 'distribution', 'profit', 'year', 'month']
+        dataset_keywords = ['manufacturer', 'price', 'fuel', 'vehicle', 'sales', 'trend', 'average', 'total', 'top', 'most', 'least', 'lowest', 'worst', 'distribution', 'profit', 'year', 'month', 'mileage', 'model', 'expensive', 'cheap', 'cheapest', 'popular']
         is_dataset_related = any(keyword in question for keyword in dataset_keywords)
 
         if is_dataset_related:
+            # Provide full dataset context for AI analysis
             data_context = f"""
-Based on the provided dataset:
+Based on the uploaded dataset with {len(df):,} vehicle records:
 
 {stats_text}
 
 Question: {request.question}
 
-Provide a direct, data-driven answer based on the statistics above. For predictions, use the trends shown in the data.
+Analyze the uploaded CSV/Excel data and provide a concise, accurate answer. Use actual data analysis to answer questions about manufacturers, prices, trends, distributions, etc. Keep answers brief and to the point - only provide detailed explanations when specifically requested.
 """
-            system_prompt = "You are a vehicle sales analyst. Always start your response with 'Based on the provided dataset' when answering dataset-related questions. Use the provided data statistics to give direct, actionable answers. Base predictions on the data trends shown."
+            system_prompt = "You are a vehicle sales data analyst. Analyze the provided dataset and give direct, concise answers. Reference specific data points when relevant. Keep responses brief unless detailed analysis is requested. Focus on facts and numbers from the dataset."
         else:
             data_context = f"""
 General Question: {request.question}
 
-Answer this question about the Sri Lankan vehicle market or general automotive knowledge. Use current market trends and general knowledge.
+Answer this question about the Sri Lankan vehicle market, automotive industry, or general vehicle knowledge. Keep answers concise and to the point.
 """
-            system_prompt = "You are a knowledgeable assistant about the Sri Lankan vehicle market and general automotive topics. Answer questions directly and informatively without mentioning any specific dataset unless relevant."
+            system_prompt = "You are a knowledgeable assistant about the Sri Lankan vehicle market and automotive industry. Answer questions directly and concisely about vehicle trends, market conditions, and general automotive knowledge in Sri Lanka. Keep responses brief and focused."
 
         chat_completion = client.chat.completions.create(
             messages=[

@@ -124,10 +124,24 @@ async def upload_file(file: UploadFile = File(...), request: Request = None):
             if pd.isna(value):
                 row[key] = None
 
+    # Convert insights to JSON-serializable format
+    def convert_insights_to_serializable(insights_dict):
+        """Convert numpy types and other non-serializable types to Python types"""
+        if isinstance(insights_dict, dict):
+            return {k: convert_insights_to_serializable(v) for k, v in insights_dict.items()}
+        elif isinstance(insights_dict, list):
+            return [convert_insights_to_serializable(item) for item in insights_dict]
+        elif hasattr(insights_dict, 'item'):  # numpy types
+            return insights_dict.item()
+        else:
+            return insights_dict
+
+    serializable_insights = convert_insights_to_serializable(insights)
+
     return {
         "columns": df.columns.tolist(),
         "preview": preview,
-        "insights": insights,
+        "insights": serializable_insights,
         "s3_url": s3_url,
         "filename": unique_filename
     }
